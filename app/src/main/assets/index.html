@@ -1,31 +1,659 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TV Box Media Manager</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>TV Box Media Manager</title>
 <style>
-:root{color-scheme:dark;--bg:#101318;--panel:#1b2028;--line:#343c49;--accent:#78b7ff;--muted:#aeb8c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f5f7fa;font:18px/1.45 system-ui, sans-serif}header{padding:20px 24px;background:#171c23;border-bottom:1px solid var(--line)}h1{font-size:26px;margin:0}main{padding:18px;max-width:1100px;margin:auto}.bar,.grid{display:flex;gap:12px;flex-wrap:wrap}.bar{align-items:center;margin:0 0 16px}.grid>section{flex:1 1 340px;min-width:280px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}h2{font-size:21px;margin:0 0 12px}label{display:block;color:var(--muted);font-size:15px;margin:8px 0 4px}input,select,textarea,button{font:inherit;border-radius:8px;border:1px solid #596577;background:#0e1218;color:#fff;padding:10px;max-width:100%}input,select,textarea{width:100%}button{background:#283c53;border-color:#547da8;cursor:pointer;font-weight:600;padding:10px 14px}button.primary{background:#285d92}button.danger{background:#48282c;border-color:#96545c}button:focus,input:focus,select:focus{outline:3px solid var(--accent);outline-offset:2px}button:disabled{opacity:.5}.muted{color:var(--muted);font-size:15px}.status{white-space:pre-wrap;margin:10px 0;color:#c6d7ec}.list{display:flex;flex-direction:column;gap:8px;max-height:42vh;overflow:auto}.item{display:flex;gap:10px;align-items:center;text-align:left;width:100%;background:#151a21;border:1px solid var(--line);font-weight:400}.item.selected{border:2px solid var(--accent)}.item small{display:block;color:var(--muted)}.poster{width:55px;height:80px;object-fit:cover;background:#303640;border-radius:4px}.result{display:flex;gap:12px;align-items:flex-start}.result .info{flex:1}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.hidden{display:none}.warning{color:#ffd19a}#status{margin-bottom:12px}
+:root{color-scheme:dark;--bg:#101216;--surface:#191c22;--surface2:#222630;--line:#343945;--text:#f4f5f7;--muted:#a8afbd;--accent:#9bc7ff;--accent2:#244b78;--good:#9ad9b1;--warn:#ffd49a;--bad:#ffb3b3}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}button,input,select,textarea{font:inherit}button{color:var(--text);background:var(--surface2);border:1px solid #454c5b;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600}button:hover,button:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}button.primary{background:var(--accent2);border-color:#5783b5}button:disabled{opacity:.45}input,select,textarea{width:100%;background:#111319;color:var(--text);border:1px solid #454c5b;border-radius:8px;padding:10px;min-width:0}input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}label{display:block;color:var(--muted);font-size:13px;margin:12px 0 5px}
+.app-header{padding:14px 22px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#171a20;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:12px}.brand-icon{width:42px;height:42px;display:grid;place-items:center;background:#273c55;border-radius:12px;font-size:23px}.brand h1{font-size:20px;line-height:1.2;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+main{max-width:1500px;margin:auto;padding:18px 20px 32px}.statusbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;background:#181d24;border:1px solid var(--line);border-radius:11px;margin-bottom:16px}.dot{width:8px;height:8px;border-radius:50%;background:#777;display:inline-block}.dot.good{background:var(--good)}.status-text{flex:1;min-width:180px}.muted{color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:16px;align-items:start}.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden;margin-bottom:16px}.panel-head{padding:15px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);flex-wrap:wrap}.panel-head h2{font-size:16px;margin:0}.panel-body{padding:15px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:8px 12px;background:transparent;border-color:transparent;color:var(--muted)}.tab.active{background:#29394e;color:#fff;border-color:#47688e}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar .grow{flex:1;min-width:160px}.library-meta{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.count{color:var(--muted);font-size:13px}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}.media-card{position:relative;min-width:0;text-align:left;padding:0;overflow:hidden;background:#14171c;border:1px solid var(--line);border-radius:10px;display:block;width:100%;font-weight:400}.media-card.selected{border:2px solid var(--accent);box-shadow:0 0 0 1px #456b96}.cover{aspect-ratio:2/3;background:linear-gradient(145deg,#303642,#181b21);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#7c8799;font-size:30px}.cover img{width:100%;height:100%;object-fit:cover}.card-copy{padding:9px}.card-title{font-size:13px;line-height:1.3;font-weight:650;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}.card-sub{font-size:11px;color:var(--muted);margin-top:4px}.tag{display:inline-block;font-size:10px;line-height:1.5;padding:2px 6px;border-radius:5px;background:#2b303a;color:#cbd4e2;margin-top:6px}.tag.done{background:#1c3a2b;color:var(--good)}.tag.dupe{background:#4a2c2c;color:var(--bad)}
+.empty{padding:28px 15px;text-align:center;color:var(--muted);border:1px dashed #3b414e;border-radius:10px}.empty strong{display:block;color:#e5e8ee;margin-bottom:5px}
+.selected-file{display:flex;gap:12px;align-items:flex-start}.selected-poster{width:92px;flex-shrink:0;aspect-ratio:2/3;border-radius:7px;overflow:hidden;background:#292e38;display:grid;place-items:center;color:#8893a4;font-size:24px}.selected-poster img{width:100%;height:100%;object-fit:cover}.selected-info{min-width:0;flex:1}.selected-info h3{font-size:17px;margin:0 0 5px;overflow-wrap:anywhere}.selected-info p{margin:3px 0}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.field-grid .full{grid-column:1/-1}.results{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;margin-top:12px}.result{display:flex;gap:10px;align-items:center;width:100%;text-align:left;font-weight:400;padding:8px;background:#15181e}.result img,.result-placeholder{width:48px;height:68px;object-fit:cover;border-radius:4px;background:#303640;flex-shrink:0;display:grid;place-items:center}.result-info{min-width:0;flex:1}.result-title{font-weight:650;font-size:13px}.result-sub{font-size:12px;color:var(--muted)}
+.section-title{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:0 0 10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.warning{color:var(--warn)}.success{color:var(--good)}.hidden{display:none!important}.status-message{white-space:pre-wrap;font-size:13px;margin-top:10px;color:#cbd7e8;min-height:18px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.settings-grid>div{min-width:0}.footer-note{color:var(--muted);font-size:12px;margin-top:12px}.pill{border-radius:999px;padding:3px 8px;background:#282d36;color:#c5ccda;font-size:11px;white-space:nowrap}.scan-line{height:3px;background:#2a303b;margin-top:8px;overflow:hidden;border-radius:4px}.scan-line span{display:block;height:100%;width:100%;background:var(--accent);transform-origin:left;animation:scan 1.4s ease-in-out infinite alternate}@keyframes scan{from{transform:scaleX(.08)}to{transform:scaleX(1)}}
+.list-block{margin-top:12px}.check{display:flex;gap:8px;align-items:center;color:var(--text);font-size:14px;margin-top:10px}.check input{width:auto}.list-block .result{margin-bottom:6px}.group-label{font-size:12px;color:var(--muted);margin:10px 0 4px}.token-help{font-size:12px;color:var(--muted);margin-top:6px}.preview{font-size:14px;margin-top:8px;word-break:break-all}.info-line{font-size:13px;color:var(--muted);margin-top:8px}.undo-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.media-grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}.app-header{padding:12px 14px}main{padding:12px}.settings-grid{grid-template-columns:1fr}}@media(min-width:1200px){.media-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
 </style></head><body>
-<header><h1>TV Box Media Manager</h1><div class="muted">Standalone • USB library • NFO and artwork</div></header>
+<header class="app-header"><div class="brand"><div class="brand-icon">🎞</div><div><h1>TV Box Media Manager</h1><p>Local library • Metadata • Artwork • NFO • Undo</p></div></div><div class="header-actions"><button onclick="showTab('library')">Library</button><button onclick="showTab('settings')">Settings</button><button class="primary" onclick="Android.chooseFolder()">Choose library folder</button></div></header>
 <main>
-<div class="bar"><button class="primary" onclick="Android.chooseFolder()">Choose USB/library folder</button><button onclick="scan()">Scan library</button><span id="folderStatus" class="muted">No folder selected</span></div>
-<div id="status" class="status" role="status">Choose the folder containing your media. Access is granted by Android's folder picker.</div>
-<div class="grid">
-<section class="panel"><h2>1. Media files</h2><input id="filter" placeholder="Filter scanned files…" oninput="renderFiles()"><div id="files" class="list" style="margin-top:10px"></div><p class="muted">Files are read through Android's Storage Access Framework. Very large libraries may take a while to scan.</p></section>
-<section class="panel"><h2>2. Find metadata</h2><label for="kind">Media type</label><select id="kind"><option value="movie">Movie</option><option value="tv">TV show</option></select><label for="query">Search title</label><input id="query" placeholder="Title to search"><div class="row" style="margin-top:8px"><select id="provider"><option value="tmdb">TMDb</option><option value="omdb">OMDb</option><option value="tvmaze">TVmaze (TV)</option></select><button class="primary" onclick="search()">Search</button></div><div id="results" class="list" style="margin-top:12px"></div><label>Selected result</label><div id="selected" class="muted">No metadata selected</div><label for="overview">Plot / overview (editable)</label><textarea id="overview" rows="3"></textarea><div class="row" style="margin-top:10px"><button class="primary" onclick="saveMetadata()">Save NFO + poster</button><button onclick="renameSelected()">Rename video…</button></div><p class="muted warning">Renaming is optional and requires a separate confirmation. Existing sidecars with the same name may be overwritten.</p></section>
-<section class="panel"><h2>Settings</h2><label for="tmdb">TMDb API key</label><input id="tmdb" autocomplete="off" placeholder="Optional, for TMDb search"><label for="omdb">OMDb API key</label><input id="omdb" autocomplete="off" placeholder="Optional, for OMDb search"><button style="margin-top:10px" onclick="saveSettings()">Save settings</button><p class="muted">TVmaze search does not require a key. API keys are stored locally on this device. Metadata providers have their own terms and rate limits.</p></section>
-</div></main>
+<div class="statusbar"><span id="folderDot" class="dot"></span><div class="status-text"><strong id="folderStatus">No library folder selected</strong><div id="status" class="muted" role="status">Choose the folder containing your media, then scan it.</div><div id="scanProgress" class="scan-line hidden"><span></span></div></div><button class="primary" onclick="scan()">⟳ Scan library</button></div>
+
+<div id="libraryView">
+<div class="layout">
+<section class="panel"><div class="panel-head"><h2>Media library</h2><span id="libraryCount" class="pill">0 videos</span></div><div class="panel-body">
+<div class="toolbar"><input id="filter" class="grow" placeholder="Search your files…" oninput="renderFiles()"><select id="viewFilter" style="width:auto;max-width:170px" onchange="renderFiles()"><option value="all">All videos</option><option value="tagged">With metadata</option><option value="untagged">Needs metadata</option><option value="duplicates">Duplicates</option></select><select id="setFilter" style="width:auto;max-width:170px" onchange="renderFiles()"><option value="">All sets</option></select><select id="sortBy" style="width:auto;max-width:190px" onchange="renderFiles()"><option value="name">Sort: name</option><option value="year">Sort: year</option><option value="recent">Sort: recently matched</option></select></div>
+<div class="library-meta"><div class="tabs"><button id="movieTab" class="tab active" onclick="setKind('movie')">Movies</button><button id="tvTab" class="tab" onclick="setKind('tv')">TV episodes</button><button id="allTab" class="tab" onclick="setKind('all')">All files</button></div><span class="count" id="shownCount">Scan to load your library</span></div>
+<div id="files" class="media-grid"><div class="empty" style="grid-column:1/-1"><strong>Your library is empty</strong>Choose a USB folder and scan to discover video files.</div></div>
+</div></section>
+
+<section>
+<div class="panel"><div class="panel-head"><h2>Selected file</h2><span id="fileBadge" class="pill">Nothing selected</span></div><div class="panel-body">
+<div id="noSelection" class="empty"><strong>Select a video</strong>Choose a file from your library to match it with online metadata.</div>
+<div id="selectionPanel" class="hidden"><div class="selected-file"><div class="selected-poster" id="selectedPoster">🎬</div><div class="selected-info"><h3 id="selectedName">—</h3><p class="muted" id="selectedPath"></p><p class="muted" id="selectedSize"></p><span id="metadataBadge" class="tag">Metadata not matched</span></div></div>
+<div class="actions"><button onclick="startSearch()" class="primary">Find metadata</button><button id="nfoBtn" class="hidden" onclick="useNfo()">Use existing NFO</button></div></div>
+<div id="detailStatus" class="status-message"></div></div></div>
+
+<div class="panel hidden" id="renamePanel"><div class="panel-head"><h2>Rename</h2><span class="pill">Template</span></div><div class="panel-body">
+<label for="renameTpl">Name template (without extension)</label><input id="renameTpl" oninput="renderRename()">
+<label class="check"><input type="checkbox" id="moveCheck" onchange="renderRename()"> Also move into a folder</label>
+<div id="dirRow" class="hidden"><label for="dirTpl">Folder template (use / for subfolders)</label><input id="dirTpl" oninput="renderRename()"></div>
+<div class="token-help">Tokens: {title} {year} {show} {season} {episode} {episode_title}. Empty parts are dropped.</div>
+<div class="preview" id="renamePreview"></div>
+<div class="actions"><button class="primary" onclick="applyRename()">Rename file + companions</button><button onclick="resetRenameTpl()">Reset template</button></div>
+<p class="footer-note">Renames the video and any NFO, poster, fanart, thumbnail or subtitle files that share its name, and moves them along if you choose a folder.</p>
+</div></div>
+
+<div class="panel" id="matchPanel"><div class="panel-head"><h2>Metadata search</h2><span class="pill">TMDb · OMDb · TVmaze</span></div><div class="panel-body">
+<div class="field-grid"><div><label for="kind">Content type</label><select id="kind"><option value="movie">Movie</option><option value="tv">TV show</option></select></div><div><label for="provider">Provider</label><select id="provider" onchange="providerChanged()"><option value="tmdb">TMDb</option><option value="omdb">OMDb</option><option value="tvmaze">TVmaze</option></select></div>
+<div class="full"><label for="query">Search title</label><input id="query" placeholder="Enter a title or select a file first" onkeydown="if(event.key==='Enter')runSearch()"></div>
+<div><label for="year">Year (optional)</label><input id="year" inputmode="numeric" maxlength="4"></div><div style="display:flex;align-items:end"><button class="primary" style="width:100%" onclick="runSearch()">Search online</button></div></div>
+<div id="results" class="results"></div>
+
+<div id="editor" class="hidden"><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><p class="section-title">Review and edit match</p>
+<div class="field-grid"><div class="full"><label for="metaTitle">Title</label><input id="metaTitle"></div><div><label for="metaYear">Year</label><input id="metaYear"></div><div><label for="metaType">Type</label><select id="metaType" onchange="tvFieldsToggle()"><option value="movie">Movie</option><option value="tv">TV episode</option></select></div>
+<div id="tvFields" class="full hidden"><div class="field-grid"><div><label for="metaSeason">Season</label><input id="metaSeason" inputmode="numeric" onchange="episodeChanged()"></div><div><label for="metaEpisode">Episode</label><input id="metaEpisode" inputmode="numeric" placeholder="e.g. 2, or 1-2 for two episodes" onchange="episodeChanged()"></div><div class="full"><label for="metaEpTitle">Episode title</label><input id="metaEpTitle"></div></div></div>
+<div class="full"><label for="overview" id="overviewLabel">Plot / overview</label><textarea id="overview" rows="4"></textarea></div></div>
+<div id="metaInfo" class="info-line"></div>
+<div class="actions"><button class="primary" onclick="saveMatch()">Save NFO + artwork</button><button onclick="cancelMatch()">Clear match</button></div>
+<p class="footer-note">Files are written beside the video (episodes also update the show folder). Every change can be undone in Settings.</p>
+</div></div></div>
+
+<div class="panel"><div class="panel-head"><h2>Bulk tools</h2><span class="pill">Library</span></div><div class="panel-body">
+<p class="muted">Auto-match the unmatched files in the current view. Only confident title and year matches are written; the rest go to review.</p>
+<div class="actions"><button class="primary" onclick="bulkAutoMatch()">Auto-match unmatched</button><button onclick="exportCsv()">Export CSV</button></div>
+<div id="bulkStatus" class="status-message"></div>
+<p class="section-title" style="margin-top:16px">Organize into folders</p>
+<p class="muted">Moves matched files into folders using the templates in Settings, and renames them to match. Preview first. Companion files move with each video.</p>
+<div class="actions"><button onclick="previewOrganize()">Preview moves</button><button class="primary" id="applyOrganizeBtn" onclick="applyOrganize()" disabled>Apply moves</button></div>
+<div id="organizeList" class="list-block"></div>
+<p class="section-title" style="margin-top:16px">Needs review</p><div id="reviewList" class="list-block"><div class="muted">Nothing waiting for review.</div></div>
+<p class="section-title" style="margin-top:16px">Duplicates</p><div id="dupList" class="list-block"><div class="muted">No duplicates found.</div></div>
+</div></div>
+</section></div></div>
+
+<div id="settingsView" class="hidden">
+<div class="panel"><div class="panel-head"><h2>Settings & providers</h2><span class="pill">Stored on this device</span></div><div class="panel-body"><p class="muted">Add API keys for providers that require them. TVmaze works without a key.</p>
+<div class="settings-grid"><div><label for="tmdb">TMDb API key</label><input id="tmdb" autocomplete="off" placeholder="TMDb API key"></div><div><label for="omdb">OMDb API key</label><input id="omdb" autocomplete="off" placeholder="OMDb API key"></div></div>
+<label for="tplMovie">Default movie rename template</label><input id="tplMovie">
+<label for="tplEpisode">Default episode rename template</label><input id="tplEpisode">
+<label for="dirMovie">Movie folder template (use / for subfolders)</label><input id="dirMovie">
+<label for="dirEpisode">Episode folder template</label><input id="dirEpisode">
+<div class="actions"><button class="primary" onclick="saveSettings()">Save settings</button><button onclick="showTab('library')">Back to library</button></div><p class="footer-note">API keys are kept in this app's local WebView storage.</p></div></div>
+<div class="panel"><div class="panel-head"><h2>Undo</h2><span class="pill">Last 20 changes</span></div><div class="panel-body"><div id="undoList"><div class="muted">No changes recorded yet.</div></div><div class="actions"><button class="primary" onclick="undoLast()">Undo last change</button></div><p class="footer-note">Undo reverses renames, deletes files that were created, and restores files that were overwritten.</p></div></div>
+<div class="panel"><div class="panel-head"><h2>File safety</h2></div><div class="panel-body"><p>Scanning is read-only. Saving writes NFO and artwork beside the video. Renaming changes filenames and is always confirmed first.</p><p class="warning">Keep a backup of important files before large-scale changes.</p></div></div>
+</div>
+</main>
 <script>
-let mediaFiles=[],selectedFile=null,selectedMetadata=null;
-const $=id=>document.getElementById(id); const parse=s=>JSON.parse(s);
+const $=id=>document.getElementById(id);
+const CACHE_KEY='tvmm.meta.v3',OLD_KEY='tvmm.metadata.v2';
+const TPL_DEFAULT={movie:'{title} ({year})',episode:'{show} - S{season}E{episode} - {episode_title}'};
+const TPL_DIR={movie:'{title} ({year})',episode:'{show}/Season {season}'};
+const SEASON_SEG=/^(season|s)[ _.-]?\d+$/i;
+let mediaFiles=[],selectedFile=null,selectedMeta=null,selectedEps=[],currentKind='movie';
+let reviewQueue=[],bulkRunning=false,detailCache={},epCache={},organizePending=[];
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+const parse=s=>JSON.parse(s);
+
+// ---------- storage ----------
+if(!localStorage.getItem(CACHE_KEY)&&localStorage.getItem(OLD_KEY))localStorage.setItem(CACHE_KEY,localStorage.getItem(OLD_KEY));
+function allMeta(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'{}')||{}}catch(e){return {}}}
+function saveAllMeta(a){localStorage.setItem(CACHE_KEY,JSON.stringify(a))}
+function metaFor(f){return allMeta()[f.uri]||null}
+function storeMeta(uri,m){const a=allMeta();a[uri]={...m,savedAt:Date.now()};saveAllMeta(a)}
+function moveMeta(from,to){if(!from||!to||from===to)return;const a=allMeta();if(a[from]){a[to]=a[from];delete a[from];saveAllMeta(a)}}
+function keyOf(p){if(p==='tmdb')return (localStorage.getItem('tmdb')||'').trim();if(p==='omdb')return (localStorage.getItem('omdb')||'').trim();return ''}
+function tplOf(k){return localStorage.getItem(k==='tv'?'tvmm.tpl.episode':'tvmm.tpl.movie')||TPL_DEFAULT[k==='tv'?'episode':'movie']}
+function dirTplOf(k){return localStorage.getItem(k==='tv'?'tvmm.dir.episode':'tvmm.dir.movie')||TPL_DIR[k==='tv'?'episode':'movie']}
+
+// ---------- text helpers ----------
 function msg(s){$('status').textContent=s}
+function detailMsg(s){$('detailStatus').textContent=s}
+function bulkMsg(s){$('bulkStatus').textContent=s}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function folderStatus(){try{let f=parse(Android.folderStatus());$('folderStatus').textContent=f.selected?'Library folder selected':'No folder selected'}catch(e){}}
-window.folderChosen=uri=>{$('folderStatus').textContent='Library folder selected';msg('Folder access saved. Press Scan library.');};
-function scan(){msg('Scanning folders…');try{const r=parse(Android.scan());if(!r.ok)throw Error(r.error);mediaFiles=r.files||[];renderFiles();msg('Found '+mediaFiles.length+' video file(s). Select one to find metadata.')}catch(e){msg('Scan failed: '+e.message)}}
-function renderFiles(){const q=$('filter').value.toLowerCase();$('files').innerHTML='';mediaFiles.filter(f=>f.name.toLowerCase().includes(q)).forEach(f=>{const b=document.createElement('button');b.className='item'+(selectedFile&&selectedFile.uri===f.uri?' selected':'');b.innerHTML='<span>🎬</span><span>'+esc(f.name)+'<small>'+esc((f.size/1048576).toFixed(1))+' MB</small></span>';b.onclick=()=>{selectedFile=f;$('query').value=f.name.replace(/\.[^.]+$/,'').replace(/[._]/g,' ');renderFiles();msg('Selected: '+f.name)};$('files').appendChild(b)})}
-function saveSettings(){localStorage.setItem('tmdb',$('tmdb').value.trim());localStorage.setItem('omdb',$('omdb').value.trim());msg('Settings saved on this device.')}
-function loadSettings(){$('tmdb').value=localStorage.getItem('tmdb')||'';$('omdb').value=localStorage.getItem('omdb')||''}
-function search(){const provider=$('provider').value,kind=$('kind').value,q=$('query').value.trim();if(!q){msg('Enter a title to search.');return}if(provider==='tvmaze'&&kind!=='tv'){msg('TVmaze is for TV shows. Choose TV show or select another provider.');return}msg('Searching '+provider+'…');$('results').innerHTML='';try{const key=provider==='tmdb'? $('tmdb').value:provider==='omdb'?$('omdb').value:'';const r=parse(Android.search(provider,q,kind,key));if(!r.ok)throw Error(r.error);const results=r.results||[];if(!results.length){msg('No results found. Try another provider or title.');return}results.forEach(m=>{const b=document.createElement('button');b.className='item';b.innerHTML=(m.poster?'<img class="poster" src="'+esc(m.poster)+'" onerror="this.style.visibility=\'hidden\'">':'<div class="poster"></div>')+'<span>'+esc(m.title)+'<small>'+esc(m.year)+' • '+esc(m.provider)+'</small></span>';b.onclick=()=>selectMetadata(m);$('results').appendChild(b)});msg('Choose the correct match below.')}catch(e){msg('Search failed: '+e.message)}}
-function selectMetadata(m){selectedMetadata=m;$('selected').textContent=m.title+' ('+m.year+') — '+m.provider;$('overview').value=m.overview||'';msg('Metadata selected. Check it before saving.')}
-function saveMetadata(){if(!selectedFile){msg('Select a video file first.');return}if(!selectedMetadata){msg('Select a metadata result first.');return}const m={...selectedMetadata,overview:$('overview').value};if(!confirm('Write NFO and poster next to “'+selectedFile.name+'”? Existing same-name sidecars may be overwritten.'))return;msg('Saving sidecar files…');try{const r=parse(Android.save(selectedFile.uri,JSON.stringify(m)));if(!r.ok)throw Error(r.error);msg(r.message)}catch(e){msg('Save failed: '+e.message)}}
-function renameSelected(){if(!selectedFile){msg('Select a video file first.');return}const old=selectedFile.name.replace(/\.[^.]+$/,'');const next=prompt('New video filename (without extension):',old);if(next===null)return;if(!next.trim()){msg('Rename cancelled: empty name.');return}if(!confirm('Rename “'+selectedFile.name+'” to “'+next+'”? This changes the video filename.'))return;try{const r=parse(Android.rename(selectedFile.uri,next.trim()));if(!r.ok)throw Error(r.error);msg(r.message);scan()}catch(e){msg('Rename failed: '+e.message)}}
-loadSettings();folderStatus();
+function pad(n){return n===''||n==null||isNaN(+n)?'':String(+n).padStart(2,'0')}
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'')}
+function extOf(name){const m=name.match(/\.[^.]+$/);return m?m[0]:''}
+function stemOfName(name){return name.replace(/\.[^.]+$/,'')}
+function extOfFile(f){return f.disc?'':extOf(f.name)}
+function stemOfFile(f){return f.disc?f.name:stemOfName(f.name)}
+function fileSize(f){return f.disc?'Disc folder':(Number(f.size||0)/1048576).toFixed(1)+' MB'}
+function confirmWrite(text){return confirm(text)}
+function rangeOf(a,b){const out=[];const end=b&&b>a?b:a;for(let n=a;n<=end&&n-a<10;n++)out.push(n);return out}
+function epText(nums){return nums.length?(nums.length>1?nums[0]+'-'+nums[nums.length-1]:String(nums[0])):''}
+function epNumbers(){const nums=(String($('metaEpisode').value).match(/\d+/g)||[]).map(Number);if(!nums.length)return [];return rangeOf(nums[0],nums.length>1?nums[nums.length-1]:nums[0])}
+
+// ---------- filename parsing (also used for disc folders) ----------
+const JUNK=/\b(480p|576p|720p|1080p|2160p|4k|uhd|x264|x265|h ?26[45]|hevc|xvid|bluray|blu-ray|brrip|bdrip|webrip|web-dl|webdl|hdtv|dvdrip|remux|aac|ac3|eac3|dts|truehd|atmos|10bit|hdr|repack|yify|yts|rarbg)\b/i;
+function parseName(x){
+  const raw=typeof x==='string'?x:x.name,disc=typeof x!=='string'&&!!x.disc;
+  let s=(disc?raw:stemOfName(raw)).replace(/\[[^\]]*\]/g,' ').replace(/\{[^}]*\}/g,' ').replace(/[._]+/g,' ').replace(/\s+/g,' ').trim();
+  let season=null,episodes=[],year='',title=s;
+  const se=s.match(/\bS(\d{1,2})\s?E(\d{1,3})(?:(?:\s?-\s?E?|E)(\d{1,3})\b)?/i)||s.match(/\b(\d{1,2})x(\d{2,3})\b/i);
+  if(se){season=+se[1];const first=+se[2];const last=se[3]?+se[3]:first;episodes=rangeOf(first,last);title=s.slice(0,se.index)}
+  else{const ys=[...s.matchAll(/\b(19\d{2}|20\d{2})\b/g)];const last=ys.pop();if(last){year=last[1];title=s.slice(0,last.index)}}
+  const j=title.search(JUNK);if(j>0)title=title.slice(0,j);
+  title=title.replace(/[\s\-(\[{]+$/,'').replace(/^[\s\-]+/,'').trim();
+  if(!title)title=s.replace(JUNK,'').trim()||stemOfName(raw);
+  return {title,year,season,episodes,isEpisode:season!==null&&episodes.length>0};
+}
+
+// ---------- rename templates ----------
+function fill(tpl,t){
+  let out=tpl.replace(/\{(\w+)\}/g,(_,k)=>t[k]??'');
+  out=out.replace(/\(\s*\)|\[\s*\]/g,'').replace(/\s+-\s*$/,'').replace(/\s+/g,' ').trim();
+  return out.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').replace(/^\.+|\.+$/g,'').trim();
+}
+function render(tpl,t){return fill(tpl,t)||'Untitled'}
+function renderPath(tpl,t){return tpl.split('/').map(seg=>fill(seg,t)).filter(Boolean).join('/')}
+function epToken(first,end){return pad(first)+(end&&end!==first?'-E'+pad(end):'')}
+function tokensFor(f){
+  const m=metaFor(f),p=parseName(f);
+  if(m&&m.kind==='tv')return {title:m.title,year:m.year||'',show:m.title,season:pad(m.season),episode:epToken(m.episode,m.episodeEnd),episode_title:m.episodeTitle||'',set:''};
+  if(m)return {title:m.title,year:m.year||'',show:'',season:'',episode:'',episode_title:'',set:m.set||''};
+  if(p.isEpisode)return {title:p.title,year:'',show:p.title,season:pad(p.season),episode:epToken(p.episodes[0],p.episodes[p.episodes.length-1]),episode_title:'',set:''};
+  return {title:p.title,year:p.year,show:'',season:'',episode:'',episode_title:'',set:''};
+}
+
+// ---------- folder + scan ----------
+function folderStatus(){try{const f=parse(Android.folderStatus());$('folderStatus').textContent=f.selected?'Library folder connected':'No library folder selected';$('folderDot').classList.toggle('good',!!f.selected)}catch(e){}}
+window.folderChosen=()=>{$('folderStatus').textContent='Library folder connected';$('folderDot').classList.add('good');msg('Folder access saved. Scan the library to begin.')};
+function scan(){
+  msg('Scanning folders… large USB libraries may take a while.');$('scanProgress').classList.remove('hidden');
+  try{
+    const r=parse(Android.scan());if(!r.ok)throw Error(r.error);
+    mediaFiles=r.files||[];
+    if(selectedFile&&!mediaFiles.some(f=>f.uri===selectedFile.uri))clearSelection();
+    else if(selectedFile)selectedFile=mediaFiles.find(f=>f.uri===selectedFile.uri);
+    renderFiles();updateSelection();
+    msg('Scan complete. Found '+mediaFiles.length+' video file(s).');
+  }catch(e){msg('Scan failed: '+e.message)}
+  finally{$('scanProgress').classList.add('hidden')}
+}
+function showTab(t){$('libraryView').classList.toggle('hidden',t!=='library');$('settingsView').classList.toggle('hidden',t!=='settings');if(t==='settings')renderUndo()}
+function setKind(k){currentKind=k;['movie','tv','all'].forEach(x=>$(x+'Tab').classList.toggle('active',x===k));renderFiles()}
+
+// ---------- library ----------
+function kindOfFile(f){const m=metaFor(f);if(m&&m.kind)return m.kind;return parseName(f).isEpisode?'tv':'movie'}
+function dupKey(m){if(!m||!m.provider||!m.id)return '';return m.kind==='tv'?`${m.provider}:${m.id}:S${m.season}E${m.episode}${m.episodeEnd?'-'+m.episodeEnd:''}`:`${m.provider}:${m.id}`}
+function duplicateGroups(){const g={};mediaFiles.forEach(f=>{const k=dupKey(metaFor(f));if(!k)return;(g[k]=g[k]||[]).push(f)});return Object.entries(g).filter(([,v])=>v.length>1)}
+function duplicateUris(){const s=new Set();duplicateGroups().forEach(([,v])=>v.forEach(f=>s.add(f.uri)));return s}
+function setNames(){return [...new Set(mediaFiles.map(f=>metaFor(f)?.set).filter(Boolean))].sort()}
+function renderSetFilter(){
+  const sel=$('setFilter'),cur=sel.value,names=setNames();
+  sel.innerHTML='<option value="">All sets</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+  sel.value=names.includes(cur)?cur:'';
+}
+function visibleFiles(){
+  const q=$('filter').value.toLowerCase().trim(),vf=$('viewFilter').value,sort=$('sortBy').value,sf=$('setFilter').value;
+  const dupes=duplicateUris();
+  let list=mediaFiles.filter(f=>f.name.toLowerCase().includes(q));
+  if(vf==='tagged')list=list.filter(f=>metaFor(f));
+  if(vf==='untagged')list=list.filter(f=>!metaFor(f));
+  if(vf==='duplicates')list=list.filter(f=>dupes.has(f.uri));
+  if(sf)list=list.filter(f=>metaFor(f)?.set===sf);
+  if(currentKind!=='all')list=list.filter(f=>kindOfFile(f)===currentKind);
+  if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='year')list.sort((a,b)=>String(metaFor(b)?.year||'').localeCompare(String(metaFor(a)?.year||'')));
+  else list.sort((a,b)=>(metaFor(b)?.savedAt||0)-(metaFor(a)?.savedAt||0));
+  return list;
+}
+function cardTitle(m,f){
+  if(!m)return stemOfFile(f);
+  if(m.kind==='tv')return `${m.title} · S${pad(m.season)}E${pad(m.episode)}${m.episodeEnd?'-E'+pad(m.episodeEnd):''}`;
+  return m.title;
+}
+function renderFiles(){
+  renderSetFilter();
+  const list=visibleFiles(),dupes=duplicateUris(),root=$('files');
+  $('libraryCount').textContent=mediaFiles.length+' video'+(mediaFiles.length===1?'':'s');
+  $('shownCount').textContent=list.length+' shown';
+  root.innerHTML='';
+  if(!list.length){root.innerHTML='<div class="empty" style="grid-column:1/-1"><strong>'+(mediaFiles.length?'No matching files':'Your library is empty')+'</strong>'+(mediaFiles.length?'Try a different filter or content type.':'Choose a USB folder and scan to discover videos.')+'</div>'}
+  list.forEach(f=>{
+    const m=metaFor(f);
+    const b=document.createElement('button');
+    b.className='media-card'+(selectedFile&&selectedFile.uri===f.uri?' selected':'');
+    b.innerHTML='<div class="cover">'+(m&&m.poster?'<img loading="lazy" src="'+esc(m.poster)+'" onerror="this.style.display=\'none\'">':(f.disc?'💿':'🎬'))+'</div><div class="card-copy"><div class="card-title">'+esc(cardTitle(m,f))+'</div><div class="card-sub">'+esc(m?.set||m?.year||fileSize(f))+'</div><span class="tag '+(m?'done':'')+'">'+(m?'Matched':'Needs metadata')+'</span>'+(f.nfo?' <span class="tag">NFO</span>':'')+(dupes.has(f.uri)?' <span class="tag dupe">Duplicate</span>':'')+'</div>';
+    b.onclick=()=>selectFile(f);
+    root.appendChild(b);
+  });
+  renderReview();renderDuplicates();
+}
+
+// ---------- selection ----------
+function clearSelection(){selectedFile=null;selectedMeta=null;selectedEps=[];$('editor').classList.add('hidden');$('results').innerHTML='';$('renamePanel').classList.add('hidden');updateSelection()}
+function selectFile(f){
+  selectedFile=f;selectedEps=[];
+  const m=metaFor(f),p=parseName(f);
+  selectedMeta=m?{...m}:null;
+  $('query').value=m?.title||p.title;
+  $('year').value=m?.year||p.year||'';
+  $('kind').value=m?.kind||(p.isEpisode?'tv':'movie');
+  $('results').innerHTML='';
+  if(m){populateEditor(m)}else{$('editor').classList.add('hidden');prefillEpisode(p)}
+  $('renameTpl').value=tplOf(kindOfFile(f));
+  $('dirTpl').value=dirTplOf(kindOfFile(f));
+  $('moveCheck').checked=false;
+  updateSelection();renderFiles();renderRename();detailMsg('');
+}
+function prefillEpisode(p){$('metaSeason').value=p.isEpisode?p.season:'';$('metaEpisode').value=p.isEpisode?epText(p.episodes):''}
+function updateSelection(){
+  const yes=!!selectedFile;
+  $('noSelection').classList.toggle('hidden',yes);$('selectionPanel').classList.toggle('hidden',!yes);$('renamePanel').classList.toggle('hidden',!yes);
+  $('fileBadge').textContent=yes?'File selected':'Nothing selected';
+  if(!yes)return;
+  const m=metaFor(selectedFile);
+  $('selectedName').textContent=selectedFile.name;$('selectedPath').textContent=selectedFile.disc?'Disc folder (BDMV / VIDEO_TS)':'USB storage file';$('selectedSize').textContent=fileSize(selectedFile);
+  $('selectedPoster').innerHTML=m&&m.poster?'<img src="'+esc(m.poster)+'" onerror="this.style.display=\'none\'">':(selectedFile.disc?'💿':'🎬');
+  $('metadataBadge').textContent=m?'Metadata saved locally':'Metadata not matched';$('metadataBadge').className='tag '+(m?'done':'');
+  $('nfoBtn').classList.toggle('hidden',!selectedFile.nfo);
+}
+function providerChanged(){if($('provider').value==='tvmaze'&&$('kind').value!=='tv'){$('kind').value='tv'}}
+function startSearch(){if(!selectedFile){detailMsg('Select a video first.');return}runSearch()}
+
+// ---------- search + details ----------
+function runSearch(){
+  const provider=$('provider').value,kind=$('kind').value,q=$('query').value.trim(),year=$('year').value.trim();
+  if(!q){msg('Enter a title to search.');return}
+  if(provider==='tvmaze'&&kind!=='tv'){msg('TVmaze is for TV shows. Choose TV show or select another provider.');return}
+  msg('Searching '+provider+'…');$('results').innerHTML='';
+  try{
+    const r=parse(Android.search(provider,q,kind,keyOf(provider),year));
+    if(!r.ok)throw Error(r.error);
+    const results=r.results||[];
+    if(!results.length){msg('No results found. Try another title, year, or provider.');return}
+    showResults(results);
+    msg(results.length+' possible match(es). Choose the correct title.');
+  }catch(e){msg('Search failed: '+e.message)}
+}
+function showResults(list){
+  $('results').innerHTML='';
+  list.forEach(m=>{
+    const b=document.createElement('button');b.className='result';
+    b.innerHTML='<span class="result-placeholder">'+(m.poster?'<img src="'+esc(m.poster)+'" onerror="this.style.visibility=\'hidden\'">':'🎬')+'</span><span class="result-info"><span class="result-title">'+esc(m.title)+'</span><br><span class="result-sub">'+esc(m.year||'Year unknown')+' · '+esc(m.provider)+' · '+esc(m.kind)+'</span></span><span>›</span>';
+    b.onclick=()=>chooseResult(m);
+    $('results').appendChild(b);
+  });
+}
+function lookupDetails(provider,id,kind){
+  const k=provider+':'+id+':'+kind;
+  if(!detailCache[k]){const r=parse(Android.details(provider,id,kind,keyOf(provider)));if(!r.ok)throw Error(r.error);detailCache[k]=r.meta}
+  return detailCache[k];
+}
+function episodesOf(provider,id,season){
+  const k=provider+':'+id+':'+season;
+  if(!epCache[k]){const r=parse(Android.episodes(provider,id,keyOf(provider),String(season)));if(!r.ok)throw Error(r.error);epCache[k]=r.episodes||[]}
+  return epCache[k];
+}
+function episodeFrom(list,season,number){return list.find(e=>e.number===number)||{season,number,title:'',overview:'',aired:'',still:'',runtime:0,rating:0}}
+function chooseResult(m){
+  try{
+    msg('Loading details…');
+    const d=lookupDetails(m.provider,m.id,m.kind);
+    selectedMeta={...d,provider:m.provider,id:m.id,kind:m.kind};
+    $('kind').value=m.kind;$('metaType').value=m.kind;
+    if(m.kind==='tv'&&selectedFile){
+      const p=parseName(selectedFile);
+      if($('metaSeason').value===''&&p.season!=null)$('metaSeason').value=p.season;
+      if($('metaEpisode').value==='')$('metaEpisode').value=epText(p.episodes);
+    }
+    populateEditor(selectedMeta);
+    if(m.kind==='tv')loadEpisodesFromInputs(true);
+    msg('Match selected. Review the details before saving.');
+  }catch(e){msg('Lookup failed: '+e.message)}
+}
+function loadEpisodesFromInputs(quiet){
+  if(!selectedMeta||selectedMeta.kind!=='tv')return;
+  const season=parseInt($('metaSeason').value,10),nums=epNumbers();
+  if(isNaN(season)||!nums.length)return;
+  try{
+    const list=episodesOf(selectedMeta.provider,selectedMeta.id,season);
+    selectedEps=nums.map(n=>episodeFrom(list,season,n));
+    $('metaEpTitle').value=selectedEps.map(e=>e.title).filter(Boolean).join(' & ');
+    $('overview').value=selectedEps[0].overview||'';
+    if(!quiet&&!selectedEps[0].title)msg('No episode data found for S'+pad(season)+'E'+pad(nums[0])+'.');
+  }catch(e){if(!quiet)msg('Episode lookup failed: '+e.message)}
+  updateInfo();
+}
+function episodeChanged(){loadEpisodesFromInputs(false)}
+function tvFieldsToggle(){const tv=$('metaType').value==='tv';$('tvFields').classList.toggle('hidden',!tv);$('overviewLabel').textContent=tv?'Episode plot':'Plot / overview'}
+function populateEditor(m){
+  $('editor').classList.remove('hidden');
+  $('metaTitle').value=m.title||'';
+  $('metaYear').value=m.year||'';
+  $('metaType').value=m.kind||'movie';
+  $('overview').value=m.overview||'';
+  $('metaEpTitle').value=m.episodeTitle||'';
+  if(m.kind==='tv'){
+    $('metaSeason').value=m.season??$('metaSeason').value;
+    if(m.episode!=null)$('metaEpisode').value=epText(rangeOf(m.episode,m.episodeEnd));
+  }
+  tvFieldsToggle();updateInfo();
+}
+function updateInfo(){
+  const m=selectedMeta;if(!m){$('metaInfo').textContent='';return}
+  const parts=[];
+  if(m.set)parts.push('Set: '+m.set);
+  if(m.genres&&m.genres.length)parts.push(m.genres.slice(0,4).join(', '));
+  if(m.runtime)parts.push(m.runtime+' min');
+  if(m.rating)parts.push('★ '+Number(m.rating).toFixed(1));
+  if(m.cast&&m.cast.length)parts.push('Cast: '+m.cast.slice(0,3).map(c=>c.name).join(', '));
+  $('metaInfo').textContent=parts.join(' · ');
+}
+function cancelMatch(){selectedMeta=null;selectedEps=[];$('editor').classList.add('hidden');$('results').innerHTML='';detailMsg('Match cleared.')}
+
+// ---------- existing NFO files ----------
+function readNfoFor(f){if(!f.nfo)return null;try{const r=parse(Android.readNfo(f.nfo));return r.ok?r.nfo:null}catch(e){return null}}
+function readShowNfoFor(f){try{const r=parse(Android.readShowNfo(f.uri));return r.ok&&r.nfo?r.nfo:null}catch(e){return null}}
+function providerForIds(ids,kind){
+  if(ids.tmdb&&keyOf('tmdb'))return {provider:'tmdb',id:String(ids.tmdb)};
+  if(kind==='tv'&&ids.tvmaze)return {provider:'tvmaze',id:String(ids.tvmaze)};
+  if(ids.imdb&&keyOf('omdb'))return {provider:'omdb',id:String(ids.imdb)};
+  return null;
+}
+// Matches a file from the IDs in its NFO (movie.nfo or <name>.nfo, or the show's tvshow.nfo for episodes).
+function nfoMatch(f,kind){
+  if(kind==='movie'){
+    const n=readNfoFor(f);if(!n||n.kind!=='movie')return null;
+    const pr=providerForIds(n.ids||{},'movie');
+    return pr?{...pr,kind:'movie',title:n.title,year:n.year}:null;
+  }
+  const show=readShowNfoFor(f);if(!show)return null;
+  const pr=providerForIds(show.ids||{},'tv');
+  return pr?{...pr,kind:'tv',title:show.title,year:show.year}:null;
+}
+function useNfo(){
+  if(!selectedFile||!selectedFile.nfo)return detailMsg('This file has no NFO beside it.');
+  const kind=$('kind').value||kindOfFile(selectedFile);
+  const m=nfoMatch(selectedFile,kind);
+  if(m){detailMsg('Found provider IDs in the NFO. Loading that match.');chooseResult(m);return}
+  const n=readNfoFor(selectedFile);
+  if(!n)return detailMsg('Could not read the NFO file.');
+  if(n.title)$('query').value=n.title;
+  detailMsg('This NFO has no provider IDs, so search by title instead.');
+}
+
+// ---------- saving ----------
+function storedMovie(meta){return {kind:'movie',provider:meta.provider,id:meta.id,ids:meta.ids||{},title:meta.title,year:meta.year||'',set:meta.set||'',overview:meta.overview||'',poster:meta.poster||'',fanart:meta.fanart||'',genres:meta.genres||[],runtime:meta.runtime||0,rating:meta.rating||0,cast:(meta.cast||[]).slice(0,5)}}
+function storedTv(show,eps){
+  const first=eps[0],last=eps[eps.length-1];
+  return {kind:'tv',provider:show.provider,id:show.id,ids:show.ids||{},title:show.title,year:show.year||'',poster:show.poster||'',fanart:show.fanart||'',genres:show.genres||[],runtime:show.runtime||0,rating:show.rating||0,cast:(show.cast||[]).slice(0,5),showOverview:show.overview||'',season:first.season,episode:first.number,episodeEnd:last.number!==first.number?last.number:0,episodeTitle:eps.map(e=>e.title).filter(Boolean).join(' & '),overview:eps.length===1?(first.overview||''):'',still:first.still||'',aired:first.aired||''};
+}
+function buildEpisodes(season,nums,list,single){
+  return nums.map(n=>{const e=episodeFrom(list,season,n);return {...e,season,number:n,title:single?($('metaEpTitle').value.trim()||e.title):e.title,overview:single?$('overview').value:e.overview}});
+}
+function saveMatch(){
+  if(!selectedFile)return detailMsg('Select a video file first.');
+  if(!selectedMeta)return detailMsg('Choose a search result first.');
+  const title=$('metaTitle').value.trim();
+  if(!title)return detailMsg('Title cannot be empty.');
+  const type=$('metaType').value,year=$('metaYear').value.trim();
+  if(type==='movie'){
+    const meta={...selectedMeta,kind:'movie',title,year,overview:$('overview').value};
+    if(!confirmWrite('Write NFO and artwork beside “'+selectedFile.name+'”? Existing same-name sidecars may be overwritten.'))return;
+    try{
+      const r=parse(Android.saveMovie(selectedFile.uri,JSON.stringify(meta)));if(!r.ok)throw Error(r.error);
+      storeMeta(selectedFile.uri,storedMovie(meta));
+      finishSave(r.message);
+    }catch(e){detailMsg('Save failed: '+e.message)}
+    return;
+  }
+  const season=parseInt($('metaSeason').value,10),nums=epNumbers();
+  if(isNaN(season)||!nums.length)return detailMsg('Enter the season and episode (use 1-2 for two episodes in one file).');
+  const show={...selectedMeta,kind:'tv',title,year};
+  let eps;
+  try{eps=buildEpisodes(season,nums,episodesOf(show.provider,show.id,season),nums.length===1)}catch(e){return detailMsg('Episode lookup failed: '+e.message)}
+  if(!confirmWrite('Write the episode NFO'+(eps.length>1?'s':'')+' and thumbnail beside “'+selectedFile.name+'”, and update tvshow.nfo, poster, fanart and season posters in the show folder?'))return;
+  try{
+    const rs=parse(Android.saveShow(selectedFile.uri,JSON.stringify(show)));if(!rs.ok)throw Error(rs.error);
+    const re=parse(Android.saveEpisode(selectedFile.uri,JSON.stringify(show),JSON.stringify(eps)));if(!re.ok)throw Error(re.error);
+    storeMeta(selectedFile.uri,storedTv(show,eps));
+    finishSave(re.message+' '+rs.message);
+  }catch(e){detailMsg('Save failed: '+e.message)}
+}
+function finishSave(text){detailMsg(text);msg('Metadata saved.');renderFiles();updateSelection();renderRename()}
+
+// ---------- bulk auto-match ----------
+function pickMatch(results,p){
+  const target=norm(p.title);
+  if(!target)return {reason:'Could not read a title from the filename',candidates:results.slice(0,5)};
+  let exact=results.filter(r=>norm(r.title)===target);
+  if(p.year)exact=exact.filter(r=>!r.year||r.year===p.year);
+  if(exact.length===1)return {match:exact[0]};
+  if(exact.length>1)return {reason:'Several exact title matches',candidates:exact.slice(0,5)};
+  return {reason:results.length?'No exact title match':'No results',candidates:results.slice(0,5)};
+}
+async function bulkAutoMatch(){
+  if(bulkRunning)return;
+  const provider=$('provider').value,key=keyOf(provider);
+  if(provider!=='tvmaze'&&!key)return bulkMsg('Add your '+(provider==='tmdb'?'TMDb':'OMDb')+' key in Settings, or choose TVmaze.');
+  const list=visibleFiles().filter(f=>!metaFor(f));
+  if(!list.length)return bulkMsg('No unmatched files in this view.');
+  bulkRunning=true;reviewQueue=[];detailCache={};epCache={};
+  const plan=[];
+  try{
+    for(let i=0;i<list.length;i++){
+      const f=list[i],p=parseName(f),kind=p.isEpisode?'tv':'movie';
+      bulkMsg('Checking '+(i+1)+' of '+list.length+': '+(p.title||f.name));
+      const fromNfo=nfoMatch(f,kind);
+      if(fromNfo){plan.push({file:f,parsed:p,kind,match:fromNfo,via:'nfo'});continue}
+      const r=parse(Android.search(provider,p.title,kind,key,p.year));
+      if(!r.ok)reviewQueue.push({file:f,reason:r.error,candidates:[]});
+      else{
+        const pick=pickMatch(r.results||[],p);
+        if(pick.match)plan.push({file:f,parsed:p,kind,match:pick.match,via:'search'});
+        else reviewQueue.push({file:f,reason:pick.reason,candidates:pick.candidates||[]});
+      }
+      await pause(250);
+    }
+    if(!plan.length){bulkMsg('No confident matches. '+reviewQueue.length+' file(s) need review.');renderReview();return}
+    const viaNfo=plan.filter(p=>p.via==='nfo').length;
+    if(!confirmWrite('Match '+plan.length+' file(s) ('+viaNfo+' from existing NFO IDs) and write NFO and artwork beside them? '+reviewQueue.length+' file(s) will be left for review. Existing same-name sidecars may be overwritten. You can undo this run in Settings.')){
+      bulkMsg('Cancelled. Nothing was written.');renderReview();return;
+    }
+    Android.beginBatch('Auto-match '+plan.length+' file(s)');
+    const savedShows=new Set();let ok=0;const errors=[];
+    try{
+      for(let i=0;i<plan.length;i++){
+        const {file,parsed,kind,match}=plan[i];
+        bulkMsg('Saving '+(i+1)+' of '+plan.length+': '+file.name);
+        try{
+          const d=lookupDetails(match.provider,match.id,kind);
+          const base={...d,provider:match.provider,id:match.id,kind};
+          if(kind==='movie'){
+            const rm=parse(Android.saveMovie(file.uri,JSON.stringify(base)));if(!rm.ok)throw Error(rm.error);
+            storeMeta(file.uri,storedMovie(base));
+          }else{
+            const eps=rangeOf(parsed.episodes[0],parsed.episodes[parsed.episodes.length-1]).map(n=>({...episodeFrom(episodesOf(match.provider,match.id,parsed.season),parsed.season,n),season:parsed.season,number:n}));
+            const showKey=match.provider+':'+match.id;
+            if(!savedShows.has(showKey)){const rs=parse(Android.saveShow(file.uri,JSON.stringify(base)));if(!rs.ok)throw Error(rs.error);savedShows.add(showKey)}
+            const re=parse(Android.saveEpisode(file.uri,JSON.stringify(base),JSON.stringify(eps)));if(!re.ok)throw Error(re.error);
+            storeMeta(file.uri,storedTv(base,eps));
+          }
+          ok++;
+        }catch(e){errors.push(file.name+': '+e.message)}
+        await pause(150);
+      }
+    }finally{Android.endBatch()}
+    renderFiles();updateSelection();
+    bulkMsg('Matched '+ok+' of '+plan.length+'. '+reviewQueue.length+' file(s) need review.'+(errors.length?' Errors: '+errors.slice(0,3).join('; ')+(errors.length>3?' …':''):''));
+  }catch(e){bulkMsg('Auto-match stopped: '+e.message)}
+  finally{bulkRunning=false;renderFiles()}
+}
+function renderReview(){
+  const box=$('reviewList');box.innerHTML='';
+  if(!reviewQueue.length){box.innerHTML='<div class="muted">Nothing waiting for review.</div>';return}
+  reviewQueue.forEach((item,idx)=>{
+    const b=document.createElement('button');b.className='result';
+    b.innerHTML='<span class="result-info"><span class="result-title">'+esc(item.file.name)+'</span><br><span class="result-sub">'+esc(item.reason)+'</span></span><span>›</span>';
+    b.onclick=()=>openReview(idx);box.appendChild(b);
+  });
+}
+function openReview(idx){const item=reviewQueue[idx];if(!item)return;selectFile(item.file);showResults(item.candidates||[]);msg('Choose the correct title for this file.')}
+function renderDuplicates(){
+  const box=$('dupList'),groups=duplicateGroups();
+  box.innerHTML='';
+  if(!groups.length){box.innerHTML='<div class="muted">No duplicates found.</div>';return}
+  groups.forEach(([k,files])=>{
+    const wrap=document.createElement('div');
+    wrap.innerHTML='<div class="group-label">'+esc(k)+'</div>';
+    files.forEach(f=>{const b=document.createElement('button');b.className='result';b.innerHTML='<span class="result-info"><span class="result-title">'+esc(f.name)+'</span></span>';b.onclick=()=>selectFile(f);wrap.appendChild(b)});
+    box.appendChild(wrap);
+  });
+}
+
+// ---------- rename, folders, organize ----------
+function previewStem(){return render($('renameTpl').value,tokensFor(selectedFile))}
+function showRootOf(folder){const seg=folder.split('/').filter(Boolean);if(seg.length&&SEASON_SEG.test(seg[seg.length-1]))seg.pop();return seg.join('/')}
+// After an episode moves, rewrite tvshow.nfo, artwork and season posters in the show's new folder.
+function refreshShow(newUri,meta,folder,seen){
+  const root=showRootOf(folder);
+  if(seen){if(seen.has(root))return 'skip';seen.add(root)}
+  try{
+    const d=lookupDetails(meta.provider,meta.id,'tv');
+    const r=parse(Android.saveShow(newUri,JSON.stringify({...d,provider:meta.provider,id:meta.id,kind:'tv',title:meta.title,year:meta.year})));
+    return r.ok?'ok':r.error;
+  }catch(e){return e.message}
+}
+// Where a file goes and what it is called. For a disc folder the last segment of the folder
+// template names the disc folder itself, and the rest is the parent path.
+function place(f,stemTpl,dirTpl,tokens){
+  const stem=render(stemTpl,tokens);
+  const rendered=renderPath(dirTpl,tokens);
+  if(!rendered)return {folder:f.dir||'',stem};
+  if(!f.disc)return {folder:rendered,stem};
+  const segs=rendered.split('/');const last=segs.pop();
+  return {folder:segs.join('/'),stem:last};
+}
+function renderRename(){
+  if(!selectedFile){$('renamePreview').textContent='';return}
+  const moving=$('moveCheck').checked;
+  $('dirRow').classList.toggle('hidden',!moving);
+  const p=moving?place(selectedFile,$('renameTpl').value,$('dirTpl').value,tokensFor(selectedFile)):{folder:selectedFile.dir||'',stem:previewStem()};
+  const moved=p.folder!==(selectedFile.dir||'');
+  $('renamePreview').textContent=(moved?'New location: '+(p.folder||'library root')+'/':'New name: ')+p.stem+extOfFile(selectedFile);
+}
+function resetRenameTpl(){if(!selectedFile)return;const k=kindOfFile(selectedFile);$('renameTpl').value=tplOf(k);$('dirTpl').value=dirTplOf(k);renderRename()}
+function applyRename(){
+  if(!selectedFile)return detailMsg('Select a video file first.');
+  const from=selectedFile,kind=kindOfFile(from),tokens=tokensFor(from);
+  const moving=$('moveCheck').checked;
+  const p=moving?place(from,$('renameTpl').value,$('dirTpl').value,tokens):{folder:from.dir||'',stem:previewStem()};
+  if(p.stem==='Untitled')return detailMsg('Pick a name first.');
+  const curDir=from.dir||'';
+  if(p.folder===curDir&&p.stem===stemOfFile(from))return detailMsg('Nothing to change.');
+  const moved=p.folder!==curDir;
+  const where=moved?' into “'+(p.folder||'library root')+'”':'';
+  if(!confirmWrite('Rename “'+from.name+'” to “'+p.stem+extOfFile(from)+'”'+where+'? Matching NFO, poster, fanart and subtitle files move with it. Some USB drives copy the file first, which can take a while.'))return;
+  const meta=metaFor(from);
+  Android.beginBatch('Rename '+from.name);
+  let r;
+  try{r=parse(Android.organize(from.uri,p.folder,p.stem,'false'))}finally{Android.endBatch()}
+  if(!r.ok)return detailMsg('Rename failed: '+r.error);
+  moveMeta(from.uri,r.uri);
+  if(meta&&meta.kind==='tv'&&moved){const s=refreshShow(r.uri,meta,p.folder);if(s!=='ok')detailMsg(r.message+' Show files: '+s)}
+  else detailMsg(r.message);
+  msg(r.message);
+  scan();
+  const f=mediaFiles.find(x=>x.uri===r.uri);
+  if(f)selectFile(f);
+}
+// Plans the moves for matched files in the current view. Nothing is written until Apply.
+function planOrganize(){
+  const out=[];
+  visibleFiles().forEach(f=>{
+    const m=metaFor(f);if(!m)return;
+    const kind=m.kind,tokens=tokensFor(f);
+    const p=place(f,tplOf(kind),dirTplOf(kind),tokens);
+    const curDir=f.dir||'';
+    if(p.folder===curDir&&p.stem===stemOfFile(f))return;
+    out.push({file:f,kind,meta:m,folder:p.folder,stem:p.stem,from:(curDir?curDir+'/':'')+f.name,to:(p.folder?p.folder+'/':'')+p.stem+extOfFile(f)});
+  });
+  return out;
+}
+function previewOrganize(){organizePending=planOrganize();renderOrganizePreview()}
+function renderOrganizePreview(){
+  const box=$('organizeList');box.innerHTML='';
+  $('applyOrganizeBtn').disabled=!organizePending.length;
+  if(!organizePending.length){box.innerHTML='<div class="muted">Nothing to move. Matched files are already in place, or nothing in this view is matched.</div>';return}
+  const head=document.createElement('div');head.className='muted';head.textContent=organizePending.length+' file(s) will move or be renamed:';box.appendChild(head);
+  organizePending.slice(0,50).forEach(p=>{const row=document.createElement('div');row.className='undo-row';row.innerHTML='<span>'+esc(p.from)+'</span><span class="muted">→ '+esc(p.to)+'</span>';box.appendChild(row)});
+  if(organizePending.length>50){const more=document.createElement('div');more.className='muted';more.textContent='…and '+(organizePending.length-50)+' more';box.appendChild(more)}
+}
+async function applyOrganize(){
+  if(bulkRunning)return;
+  const plan=organizePending.slice();
+  if(!plan.length)return bulkMsg('Preview moves first.');
+  if(!confirmWrite('Move and rename '+plan.length+' file(s)? Companion files move with each video. Some USB drives copy each file first, which can take a long time. You can undo this batch in Settings.'))return;
+  bulkRunning=true;let ok=0;const errors=[];const seen=new Set();
+  Android.beginBatch('Organize '+plan.length+' file(s)');
+  try{
+    for(let i=0;i<plan.length;i++){
+      const p=plan[i];
+      bulkMsg('Moving '+(i+1)+' of '+plan.length+': '+p.file.name);
+      try{
+        const r=parse(Android.organize(p.file.uri,p.folder,p.stem,'false'));if(!r.ok)throw Error(r.error);
+        moveMeta(p.file.uri,r.uri);
+        if(p.kind==='tv'){const s=refreshShow(r.uri,p.meta,p.folder,seen);if(s!=='ok'&&s!=='skip')errors.push('show files for '+p.file.name+': '+s)}
+        ok++;
+      }catch(e){errors.push(p.file.name+': '+e.message)}
+      await pause(50);
+    }
+  }finally{Android.endBatch();bulkRunning=false}
+  organizePending=[];
+  scan();
+  renderOrganizePreview();
+  bulkMsg('Moved '+ok+' of '+plan.length+'.'+(errors.length?' Errors: '+errors.slice(0,3).join('; ')+(errors.length>3?' …':''):''));
+}
+
+// ---------- CSV export ----------
+function csvCell(v){const s=String(v??'');return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function exportCsv(){
+  const rows=[['file','type','title','year','set','season','episode','episode_end','episode_title','provider','id','imdb','genres','runtime','rating','aired']];
+  let n=0;
+  mediaFiles.forEach(f=>{const m=metaFor(f);if(!m)return;n++;rows.push([f.name,m.kind,m.title,m.year,m.set||'',m.season??'',m.episode??'',m.episodeEnd||'',m.episodeTitle??'',m.provider,m.id,(m.ids||{}).imdb||'',(m.genres||[]).join('; '),m.runtime||'',m.rating||'',m.aired||''])});
+  if(!n)return bulkMsg('Nothing to export yet. Match some files first.');
+  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const d=new Date(),stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');
+  try{const r=parse(Android.exportCsv('tvmm-export-'+stamp+'.csv',csv));if(!r.ok)throw Error(r.error);bulkMsg(r.message+' ('+n+' rows)')}
+  catch(e){bulkMsg('Export failed: '+e.message)}
+}
+
+// ---------- undo + settings ----------
+function renderUndo(){
+  const box=$('undoList');
+  try{
+    const list=parse(Android.undoList());
+    if(!list.length){box.innerHTML='<div class="muted">No changes recorded yet.</div>';return}
+    box.innerHTML='';
+    list.forEach(b=>{const row=document.createElement('div');row.className='undo-row';row.innerHTML='<span>'+esc(b.label||'Change')+'</span><span class="muted">'+esc(b.count)+' item(s) · '+esc(new Date(b.time).toLocaleString())+'</span>';box.appendChild(row)});
+  }catch(e){box.innerHTML='<div class="warning">Could not load history: '+esc(e.message)+'</div>'}
+}
+function undoLast(){
+  if(!confirmWrite('Undo the most recent change? Renamed and moved files go back, created folders and files are deleted, and overwritten files are restored.'))return;
+  try{
+    const r=parse(Android.undoLast());
+    (r.moved||[]).forEach(mv=>moveMeta(mv.from,mv.to));
+    msg(r.message);
+    scan();renderUndo();
+  }catch(e){msg('Undo failed: '+e.message)}
+}
+function saveSettings(){
+  localStorage.setItem('tmdb',$('tmdb').value.trim());
+  localStorage.setItem('omdb',$('omdb').value.trim());
+  localStorage.setItem('tvmm.tpl.movie',$('tplMovie').value.trim()||TPL_DEFAULT.movie);
+  localStorage.setItem('tvmm.tpl.episode',$('tplEpisode').value.trim()||TPL_DEFAULT.episode);
+  localStorage.setItem('tvmm.dir.movie',$('dirMovie').value.trim()||TPL_DIR.movie);
+  localStorage.setItem('tvmm.dir.episode',$('dirEpisode').value.trim()||TPL_DIR.episode);
+  msg('Settings saved on this device.');
+}
+function loadSettings(){
+  $('tmdb').value=localStorage.getItem('tmdb')||'';
+  $('omdb').value=localStorage.getItem('omdb')||'';
+  $('tplMovie').value=localStorage.getItem('tvmm.tpl.movie')||TPL_DEFAULT.movie;
+  $('tplEpisode').value=localStorage.getItem('tvmm.tpl.episode')||TPL_DEFAULT.episode;
+  $('dirMovie').value=localStorage.getItem('tvmm.dir.movie')||TPL_DIR.movie;
+  $('dirEpisode').value=localStorage.getItem('tvmm.dir.episode')||TPL_DIR.episode;
+}
+loadSettings();folderStatus();renderFiles();
 </script></body></html>

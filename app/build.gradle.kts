@@ -1,4 +1,3 @@
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -10,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tvboxmediamanager"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 28
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     compileOptions {
