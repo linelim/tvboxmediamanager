@@ -56,10 +56,17 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun documentId(uri: Uri): String {
+    return if (uri.pathSegments.contains("document")) {
+        DocumentsContract.getDocumentId(uri)
+    } else {
+        DocumentsContract.getTreeDocumentId(uri)
+    }
+}
     private fun children(parent: Uri): List<JSONObject> {
         val tree = treeUri ?: return emptyList()
         val out = mutableListOf<JSONObject>()
-        val parentId = DocumentsContract.getDocumentId(parent)
+        val parentId = documentId(parent)
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(tree, parentId)
         val projection = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.COLUMN_SIZE)
         contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
@@ -187,7 +194,7 @@ class MainActivity : Activity() {
 
     private fun createFile(parentUri: Uri, name: String, mime: String, bytes: ByteArray): String {
         val tree = treeUri ?: throw Exception("Choose a media folder first")
-        val parentId = DocumentsContract.getDocumentId(parentUri)
+        val parentId = documentId(parentUri)
         val parentDoc = DocumentsContract.buildDocumentUriUsingTree(tree, parentId)
         val existing = children(parentDoc).firstOrNull { it.optString("name").equals(name, true) }
         val target = if (existing != null) Uri.parse(existing.getString("uri")) else DocumentsContract.createDocument(contentResolver, parentDoc, mime, name) ?: throw Exception("Could not create $name")
